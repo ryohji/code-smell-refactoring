@@ -20,7 +20,11 @@ code-smell-refactoring/
 │   ├── patterns.md                 臭い別の具体手順（1 行 = 1 コミット）
 │   ├── dependency-breaking.md      テストのための依存の切りはなし
 │   ├── task-prompts.md             各ステップの指示文（5 種）
-│   └── plan-template.md            REFACTORING_PLAN.md の形式
+│   ├── plan-template.md            REFACTORING_PLAN.md と HANDOVER.md の形式
+│   └── lang/                       言語固有の補足（対象言語のものだけ読む）
+│       ├── c.md                    C / C++
+│       ├── oo.md                   Java / C# / Kotlin ほか
+│       └── dynamic.md              Python / JS / TS / Ruby ほか
 └── scripts/
     ├── verify_harness.sh           テスト実行手段の検出（フェーズ 0）
     └── hotspots.sh                 git 履歴から変更頻度を集計（フェーズ 1）
@@ -75,6 +79,15 @@ REFACTORING_PLAN.md の #1 から順に修正してください。
 - **git リポジトリであること。** 1 コミット 1 変更でグリーンを刻む前提。`hotspots.sh` も git 履歴を使う
 - **テストが 1 コマンドで実行できること。** ない場合はフェーズ 0 でフレームワークを整える
 - **着手時点でテストがグリーンであること。** レッドの状態では「自分が壊したか」を判定できないので、先に既存の失敗を解消する
+
+## 言語中立と言語パック
+
+コア（`SKILL.md` と `references/*.md`）は**どの言語でも成立する内容だけ**を持つ。
+言語ごとの書きかた・落とし穴・「完了の形」は `references/lang/` に分けてあり、
+フェーズ 0 で対象言語のパックを 1 つ選んで以後の作業役に読ませる。
+
+パックが無い言語でも作業は成立する。**足りなかった点を最後に報告する**運用に
+してあるので、その報告が新しいパックの素材になる。
 
 ## 設計の要点
 
