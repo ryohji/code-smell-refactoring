@@ -10,6 +10,7 @@
 code-smell-refactoring/
 ├── SKILL.md                        ← 中核。全フェーズの流れ。まずこれを読む
 ├── README.md                       ← この説明
+├── LICENSE                         CC BY 4.0
 ├── references/
 │   ├── capabilities.md             実行方式の判定（層 1／層 2）
 │   ├── smells.md                   臭い 10 分類・優先度マトリクス
@@ -120,3 +121,17 @@ REFACTORING_PLAN.md の #1 から順に修正してください。
 - マイケル・C・フェザーズ『レガシーコード改善ガイド』翔泳社、2009
 - ケント・ベック『テスト駆動開発』オーム社、2017
 - エリック・ガンマほか『デザインパターン』ソフトバンククリエイティブ、1999
+
+本文は上記を参照しつつ、筆者の講義資料をもとに書きおろしたもの。
+
+## ライセンス
+
+© 2026 Ryohji Ikebe
+
+このリポジトリの内容（文書・スクリプトを含む）は [Creative Commons 表示 4.0 国際（CC BY 4.0）](https://creativecommons.org/licenses/by/4.0/deed.ja)で提供する。全文は [`LICENSE`](LICENSE)。改変・再配布・商用利用ができ、条件は出典の表示のみ。
+
+表示の例：
+
+> code-smell-refactoring by Ryohji Ikebe（https://github.com/ryohji/code-smell-refactoring）, CC BY 4.0
+
+リポジトリへ取りこんで使う場合は、`.agents/skills/code-smell-refactoring/LICENSE` をそのまま残せば条件を満たす。
