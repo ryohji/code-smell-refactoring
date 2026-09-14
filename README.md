@@ -2,17 +2,14 @@
 
 コードの臭いを検出して優先度づけし、**テストで保護してから小さなステップでグリーンを保ちつつ**リファクタリングするための手順書。『ソフトウェア実装改善ガイド』の方法論を実行可能な形にしたもの。
 
-エージェント製品に依存しない。中身はすべて Markdown とシェルスクリプトで、`SKILL.md` を読ませれば任意のコーディングエージェントで使える。
+エージェント製品に依存しない。中身はすべて Markdown とシェルスクリプトで、**Agent Skills の共通形式**（`SKILL.md` + frontmatter）に従っているので、Claude Code・Codex・GitHub Copilot・Cursor がいずれも同じディレクトリをそのまま読める。
 
 ## ファイル構成
 
 ```
 code-smell-refactoring/
 ├── SKILL.md                        ← 中核。全フェーズの流れ。まずこれを読む
-├── AGENTS.md                       → SKILL.md への転送（Codex CLI ほか）
 ├── README.md                       ← この説明
-├── .github/
-│   └── copilot-instructions.md     → SKILL.md への転送（GitHub Copilot）
 ├── references/
 │   ├── capabilities.md             実行方式の判定（層 1／層 2）
 │   ├── smells.md                   臭い 10 分類・優先度マトリクス
@@ -32,33 +29,53 @@ code-smell-refactoring/
 
 ## 導入方法
 
-### Claude Code
+このディレクトリを、各ツールが走査する場所に置くだけでよい。**転送用の指示ファイル（`AGENTS.md` や `.github/copilot-instructions.md`）は要らない。** どのツールも frontmatter の `name` と `description` だけを先に読み、依頼が一致したときに本体を読む。
+
+| ツール | 個人 | リポジトリ |
+|---|---|---|
+| Claude Code | `~/.claude/skills/` | `<repo>/.claude/skills/` |
+| Codex | `~/.agents/skills/` | `<repo>/.agents/skills/`（cwd からリポジトリルートまで走査） |
+| GitHub Copilot（VS Code / CLI / cloud） | `~/.copilot/skills/`, `~/.claude/skills/`, `~/.agents/skills/` | `.github/skills/`, `.claude/skills/`, `.agents/skills/` |
+| Cursor | `~/.cursor/skills/` | `<repo>/.cursor/skills/` |
+
+共通の交差点が `.agents/skills` なので、**そこを正本にして残りは symlink で足す**のが最小構成になる。
+
+### 個人用
+
+```bash
+git clone <このリポジトリ> ~/.agents/skills/code-smell-refactoring   # Codex と Copilot はここを直接読む
+ln -s ~/.agents/skills/code-smell-refactoring ~/.claude/skills/code-smell-refactoring
+ln -s ~/.agents/skills/code-smell-refactoring ~/.cursor/skills/code-smell-refactoring
+```
+
+symlink を走査が追わないツールがあれば、その場所にはコピーを置いて更新時に同期する。
+
+### リポジトリ共有
+
+実体を `<repo>/.agents/skills/code-smell-refactoring/` に取りこみ、`.claude/skills/` と `.cursor/skills/` からは相対 symlink を張ってコミットする。
+
+```bash
+git subtree add --prefix .agents/skills/code-smell-refactoring <このリポジトリ> master --squash
+ln -s ../../.agents/skills/code-smell-refactoring .claude/skills/code-smell-refactoring
+```
+
+submodule でも成立するが、`git clone` 直後に中身が空になるので subtree のほうが事故が少ない。symlink が使えない環境（Windows で `core.symlinks` が無効など）ではコピーを置く。
+
+### 呼びだし方
+
+- **自動**：`description` に一致する依頼で読みこまれる（「この関数が長すぎるので整理して」など）
+- **明示**：Claude Code と Copilot は `/code-smell-refactoring`、Codex は `$code-smell-refactoring`（`/skills` からも選べる）
+
+### skill 機構を持たないツール
+
+会話の冒頭で場所を教えれば足りる。内容はツールに依存しない。
 
 ```
-~/.claude/skills/code-smell-refactoring/     # 個人用
-<repo>/.claude/skills/code-smell-refactoring/  # リポジトリ共有
-```
-
-置くだけで `SKILL.md` の `description` にもとづいて自動起動する。`/code-smell-refactoring` で明示的に呼びだすこともできる。
-
-### GitHub Copilot
-
-リポジトリのルートに置き、`.github/copilot-instructions.md` を配置する（このディレクトリに同梱のものをコピーするか、リポジトリ既存のファイルに転送行を追記する）。
-
-Copilot はサブタスクを起動できないので**層 2** として動く。`references/capabilities.md` の層 2 の手順に従い、ステップごとにセッションを区切る。
-
-### Codex CLI
-
-リポジトリのルート（または対象ディレクトリ）に `AGENTS.md` を置く。Codex は起動時に `AGENTS.md` を読むので、そこから `SKILL.md` へ誘導する。
-
-### Cursor / Cline / その他
-
-多くのツールは「ルールファイル」の仕組みを持っている（`.cursor/rules/`、`.clinerules` など）。そこに `AGENTS.md` と同じ内容の転送行を書く。仕組みがない場合は、会話の冒頭で次のように指示すれば足りる。
-
-```
-skills/code-smell-refactoring/SKILL.md を読んで、その手順に従って
+.agents/skills/code-smell-refactoring/SKILL.md を読んで、その手順に従って
 src/parser 以下をリファクタリングしてください。
 ```
+
+サブタスクを起動できないツールでは**層 2**（1 セッション 1 ステップ）として動く。判定と手順は `references/capabilities.md`。
 
 ## 使いはじめ方
 
